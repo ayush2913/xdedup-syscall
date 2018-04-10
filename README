@@ -1,0 +1,43 @@
+Files present in submission: 
+
+-- xhw1.c
+-- sys_xdedup.c
+-- Makefile
+-- README
+-- install_module.sh
+
+Usage: ./xdedup -npd infile1 infile2 outfile
+
+General procedure for syscall:
+	Taking the two input files. Checking all the validation upon them along with the flags. Then input files are opened with filp_open. After that both the files are read into separate buffers using vfs_read. These buffers are matched byte by byte. If p flag is given and output file is there, the matching content will be written into the output file using vfs_write. Number of matching bytes are returned. If there is any error or failure in the process, corresponding error value is returned in the system call.
+
+Behaviour of flags:
+
+	-p/pd: output file param is expected.
+			If the given output file does not exist, it will be created.
+			Permissions of output file will be same as that of first input file. user/groups will be set according process id.
+			if the inputs file have matching(partial/full) content, it will be written to the output file. Number of matching bytes will be returned.
+
+	-np/npd: Output file param is not Expected.
+			 EINVAL error on giving output file.
+		 	 if the inputs file have matching(partial/full) content,  number of matching bytes will be returned.
+
+	-n/nd: Output file param is not expected.
+			If file sizes are not same, EINVAL is returned.
+			if the inputs file have fully matching content, size of input file(s) will be returned.
+
+	Above three operations will happen successfully even if input files are pointing to same file node.
+
+	-d/(none): Output file param is not expected.
+				If input files are pointing to same inode, then EINVAL is returned.
+				If file sizes/owner/permissions are not same, then EPERM is returned.
+				- owner/permissions not same will return EPERM
+				- sizes not same will return EINVAL
+
+
+EXTRA CREDITS: 
+	SYMLINK for input files are supported but its not wrapped in #ifdef EXTRA_CREDIT Because the code is integrated with basic functionality.
+
+		for handling symlinks I am getting the absolute path of the file at which symlink is actually pointing. Then this absolute path is used instead of the name to link and unlink.
+
+
